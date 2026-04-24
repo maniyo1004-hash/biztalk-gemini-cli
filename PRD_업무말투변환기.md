@@ -14,11 +14,12 @@
 3. [기술 스택 및 사전 준비](#3-기술-스택-및-사전-준비)
 4. [기능 요구사항](#4-기능-요구사항)
 5. [시스템 아키텍처](#5-시스템-아키텍처)
-6. [디렉토리 구조](#6-디렉토리-구조)
-7. [API 명세](#7-api-명세)
-8. [단계별 구현 가이드](#8-단계별-구현-가이드)
-9. [바이브 코딩 프롬프트 예시](#9-바이브-코딩-프롬프트-예시)
-10. [배포 가이드](#10-배포-가이드)
+6. [화면 디자인 및 스타일 가이드](#6-화면-디자인-및-스타일-가이드)
+7. [디렉토리 구조](#7-디렉토리-구조)
+8. [API 명세](#8-api-명세)
+9. [단계별 구현 가이드](#9-단계별-구현-가이드)
+10. [바이브 코딩 프롬프트 예시](#10-바이브-코딩-프롬프트-예시)
+11. [배포 가이드](#11-배포-가이드)
 
 ---
 
@@ -234,39 +235,70 @@ graph LR
 
 ---
 
-## 6. 디렉토리 구조
+## 6. 화면 디자인 및 스타일 가이드
+
+### 6.1 디자인 컨셉
+- **Professional & Clean**: 신뢰감을 주는 블루/인디고 컬러 톤 사용
+- **Simple UX**: 한 눈에 흐름이 보이는 단일 페이지 구성 (Single Page App 느낌)
+
+### 6.2 주요 레이아웃 구성
+1. **Header**: 서비스 로고 및 타이틀 ("업무 말투 변환기")
+2. **Input Section**:
+   - 원문 입력창 (Textarea): "원문을 입력하세요..." (Placeholder)
+3. **Selection Section**:
+   - 수신 대상 선택 (4개 버튼): 상사 / 타팀 동료 / 고객 / 팀 내 동료
+4. **Action Section**:
+   - [변환하기] 버튼: 눈에 띄는 강조 컬러 적용
+5. **Output Section**:
+   - 결과 출력창 (Read-only Textarea)
+   - [복사하기] 버튼: 하단 배치
+6. **Footer**: 카피라이트 및 관련 링크
+
+### 6.3 스타일 상세 (CSS 가이드)
+- **Primary Color**: `#2563eb` (Indigo-600) - 포인트 컬러
+- **Secondary Color**: `#f8fafc` (Slate-50) - 배경색
+- **Border**: `1px solid #e2e8f0`, `border-radius: 8px`
+- **Typography**: Pretendard 또는 시스템 기본 폰트 (Sans-serif)
+
+### 6.4 상태 UI (Interactive UX)
+- **Button Hover**: 마우스 오버 시 색상 변화
+- **Active State**: 선택된 수신 대상 버튼은 강조색 배경 + 흰색 글씨
+- **Loading State**: 변환 중 버튼 비활성화 및 스피너(또는 "변환 중..." 텍스트) 표시
+
+---
+
+## 7. 디렉토리 구조
 
 ```
-biztone-converter/
+├── .venv/                      # 가상환경 폴더 (STEP 1 생성, git 제외)
+├── .gitignore                  # Git 제외 목록 (.env, .venv, __pycache__ 등)
+├── README.md                   # 프로젝트 개요 및 실행 방법
+├── .env                    # Upstage API 키 (STEP 1 생성, git 제외)
+├── .env.example            # 환경 변수 샘플 파일
 │
-├── backend/
-│   ├── main.py                 # FastAPI 앱 + CORS 설정
-│   ├── routers/
-│   │   └── convert.py          # /api/convert 라우터
-│   ├── services/
-│   │   └── tone_converter.py   # LangChain + Solar-Pro2 연동
-│   ├── prompts/
-│   │   └── templates.py        # 대상별 프롬프트 템플릿
+├── backend/                    # 백엔드 서버 (FastAPI)
+│   ├── main.py                 # FastAPI 앱 설정, CORS 및 라우터 통합
+│   ├── requirements.txt        # 의존성 패키지 목록 (langchain, fastapi 등)
 │   ├── models/
-│   │   └── schemas.py          # Pydantic 요청/응답 스키마
-│   ├── .env                    # API 키 (git 제외)
-│   ├── .env.example            # 환경 변수 샘플 (git 포함)
-│   └── requirements.txt        # 패키지 목록
+│   │   └── schemas.py          # Pydantic 기반 데이터 검증 모델 (STEP 2-1)
+│   ├── prompts/
+│   │   └── templates.py        # 대상별 프롬프트 템플릿 (STEP 2-2)
+│   ├── services/
+│   │   └── tone_converter.py   # LangChain 연동 및 변환 로직 (STEP 2-3)
+│   └── routers/
+│       └── convert.py          # API 엔드포인트 정의 (STEP 2-4)
 │
-├── frontend/
-│   ├── index.html              # 메인 페이지
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── app.js              # API 호출 + UI 로직
-│
-├── .gitignore
-└── README.md
+└── frontend/                   # 프론트엔드 (Static HTML/CSS/JS)
+    ├── index.html              # 메인 UI 레이아웃 (STEP 3-1)
+    ├── css/
+    │   └── style.css           # UI 디자인 및 스타일링 (STEP 3-2)
+    └── js/
+        └── app.js              # 버튼 이벤트 및 API 연동 로직 (STEP 3-3)
 ```
 
 ---
 
-## 7. API 명세
+## 8. API 명세
 
 ### `POST /api/convert`
 
@@ -323,30 +355,92 @@ Content-Type: application/json
 
 ---
 
-## 8. 단계별 구현 가이드
+## 9. 단계별 구현 가이드
 
 ### STEP 1. 환경 준비 (30분)
 
-1. GitHub 레포지토리 생성 (`biztone-converter`)
-2. 로컬에 디렉토리 구조 생성
-3. `.gitignore` 작성 (`.env` 포함)
-4. Upstage API 키 발급 및 `.env` 파일 작성
-5. `requirements.txt` 작성 및 패키지 설치
+1. **가상환경 설정**
+   - 가상환경을 생성하고 가상환경을 활성화합니다.
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows (PowerShell/CMD)
+   # source .venv/bin/activate  # Mac/Linux
+   ```
+
+2. **디렉토리 구조 생성 (섹션 7 참고)**
+   - 백엔드와 프론트엔드 폴더 구조를 미리 만듭니다.
+   ```bash
+   mkdir -p backend/routers backend/services backend/prompts backend/models
+   mkdir -p frontend/css frontend/js
+   ```
+
+3. **환경 변수 및 보안 설정**
+   - `.gitignore` 파일을 생성하여 민감한 정보가 노출되지 않게 합니다.
+   - `.env` 파일을 생성하고 발급받은 Upstage API 키를 저장합니다.
+   ```bash
+   # .gitignore 작성
+   echo ".env" >> .gitignore
+   echo ".venv/" >> .gitignore
+   echo "__pycache__/" >> .gitignore
+
+   # .env 작성
+   echo "UPSTAGE_API_KEY=your_api_key_here" >> backend/.env
+   ```
+
+4. **의존성 패키지 설치**
+   - `backend/requirements.txt`를 작성하고 필요한 라이브러리를 설치합니다.
+   ```bash
+   cd backend
+   # 섹션 11의 내용을 requirements.txt에 복사 후 실행
+   pip install -r requirements.txt
+   cd ..
+   ```
+
+5. **Git 초기화 및 첫 커밋**
+   - GitHub 레포지토리를 연결하기 전 로컬 저장소를 초기화합니다.
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit: Project environment setup"
+   ```
 
 ---
 
 ### STEP 2. 백엔드 구현 (90분)
 
-> 📌 **원칙 2 적용**: 구현 전 Solar-Pro2 연동 방식을 먼저 확인하세요.
+> 📌 **원칙 2 적용**: 구현 전 Solar-Pro2 연동 방식을 먼저 확인하세요. (섹션 10 프롬프트 활용)
 
-**구현 순서**
+**1. 데이터 모델 정의 (`models/schemas.py`)**
+   - Pydantic을 사용하여 API의 요청과 응답 형식을 정의합니다.
+   - `ConvertRequest`: 원문(`text`)과 수신 대상(`target_audience`) 필드 포함
+   - `ConvertResponse`: 변환된 텍스트와 메타데이터 포함
 
-1. `schemas.py` — 요청/응답 데이터 모델 정의
-2. `templates.py` — 수신 대상별 프롬프트 템플릿 작성
-3. `tone_converter.py` — LangChain + Solar-Pro2 연동
-4. `convert.py` — API 라우터 구현
-5. `main.py` — FastAPI 앱 + CORS 설정
-6. 로컬 테스트 (`uvicorn main:app --reload`)
+**2. 프롬프트 템플릿 작성 (`prompts/templates.py`)**
+   - 섹션 5의 전략에 따라 4가지 대상별 시스템 프롬프트를 딕셔너리 형태로 저장합니다.
+   - 각 대상의 특징(격식, 정중, 친절, 간결)이 잘 드러나도록 지시문을 상세히 적습니다.
+
+**3. 핵심 변환 로직 구현 (`services/tone_converter.py`)**
+   - `langchain-upstage` 패키지의 `ChatUpstage`를 초기화합니다.
+   - 사용자가 선택한 `target_audience`에 맞는 프롬프트를 선택하는 로직을 작성합니다.
+   - `ChatPromptTemplate`을 사용하여 시스템 메시지와 사용자 메시지를 조합하고 LLM을 호출합니다.
+
+**4. API 라우터 구현 (`routers/convert.py`)**
+   - FastAPI의 `APIRouter`를 생성합니다.
+   - `POST /convert` 엔드포인트를 만들고, 요청 데이터를 `tone_converter` 서비스로 전달합니다.
+   - 예외 처리(LLM 호출 실패 등)를 추가하여 안정성을 높입니다.
+
+**5. 메인 앱 설정 (`main.py`)**
+   - FastAPI 객체를 생성하고 생성한 라우터를 연결합니다.
+   - **중요**: 프론트엔드 통신을 위해 `CORSMiddleware`를 설정합니다. (`allow_origins=["*"]`)
+   - 헬스체크용 `GET /health` 엔드포인트를 추가합니다.
+
+**6. 로컬 서버 실행 및 테스트**
+   - 서버를 실행하고 스웨거(Swagger) 문서에서 API를 직접 호출해 봅니다.
+   ```bash
+   cd backend
+   uvicorn main:app --reload --port 8000
+   # 브라우저에서 http://localhost:8000/docs 접속 후 테스트
+   ```
 
 **핵심 코드 구조 참고**
 
@@ -400,11 +494,28 @@ app.include_router(convert.router, prefix="/api")
 
 ### STEP 3. 프론트엔드 구현 (60분)
 
-**구현 순서**
+**1. HTML 구조 설계 (`index.html`)**
+   - 섹션 6.2의 레이아웃 구성에 따라 HTML 태그를 작성합니다.
+   - 각 요소(입력창, 버튼, 결과창 등)에 JavaScript에서 접근하기 위한 고유 `id`를 부여합니다.
+   - 수신 대상 버튼들은 그룹화하여 관리합니다.
 
-1. `index.html` — 화면 레이아웃 작성
-2. `style.css` — 기본 스타일 적용
-3. `app.js` — 버튼 이벤트 + API 호출 + 결과 출력
+**2. CSS 스타일링 (`css/style.css`)**
+   - 섹션 6.3의 스타일 가이드를 적용하여 디자인을 입힙니다.
+   - **레이아웃**: `flex` 또는 `grid`를 사용하여 중앙 정렬 및 여백을 조절합니다.
+   - **상태 변화**: `:hover`, `:active` 가상 클래스와 `.active` 클래스(선택된 버튼용) 스타일을 정의합니다.
+   - **반응형**: 모바일에서도 보기 편하도록 최대 너비를 제한하고 패딩을 조절합니다.
+
+**3. JavaScript 기능 구현 (`js/app.js`)**
+   - **버튼 토글 로직**: 수신 대상 버튼 클릭 시 기존 `.active` 클래스를 제거하고 클릭된 버튼에 추가합니다.
+   - **API 통신**: [변환하기] 버튼 클릭 시 `fetch`를 사용하여 백엔드 `/api/convert`에 데이터를 보냅니다.
+   - **UI 업데이트**: 
+     - 통신 시작 시 로딩 스피너를 보여주고 버튼을 비활성화합니다.
+     - 결과 수신 후 결과창에 텍스트를 출력하고 로딩 상태를 해제합니다.
+   - **복사 기능**: `navigator.clipboard.writeText()`를 사용하여 결과 텍스트를 클립보드에 복사합니다.
+
+**4. 브라우저 테스트**
+   - `index.html`을 브라우저로 열어 화면이 의도한 대로 나오는지 확인합니다.
+   - 백엔드 서버가 실행 중인 상태에서 실제로 변환이 일어나는지 테스트합니다.
 
 **핵심 JS 구조 참고**
 
@@ -449,15 +560,36 @@ async function convertTone() {
 
 > 📌 **원칙 4 적용**: 배포 전 전체 흐름을 한 번 읽고 이해했는지 확인하세요.
 
-1. GitHub에 전체 코드 푸시
-2. Vercel에서 `frontend/` 디렉토리 연결
-3. Vercel 환경 변수에 백엔드 URL 설정
-4. `app.js`의 `API_BASE`를 실제 백엔드 URL로 수정
-5. 배포 후 실제 URL에서 동작 확인
+**1. 코드 정리 및 GitHub 푸시**
+   - 로컬에서 최종 테스트를 마치고, `.gitignore`가 정상 작동하여 `.env`나 가상환경 폴더가 포함되지 않았는지 확인합니다.
+   ```bash
+   git add .
+   git commit -m "Final: All features implemented and tested"
+   git push origin main
+   ```
+
+**2. 백엔드 배포 (Render 또는 Railway 추천)**
+   - **레포지토리 연결**: 선택한 플랫폼(예: Render)에 GitHub 레포지토리를 연결합니다.
+   - **Root Directory**: `backend`로 설정합니다.
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT` (플랫폼 규격에 맞춤)
+   - **Environment Variables**: `UPSTAGE_API_KEY` 값을 환경 변수로 등록합니다.
+   - **확인**: 배포된 백엔드 URL(예: `https://api-xxx.onrender.com`)을 복사해 둡니다.
+
+**3. 프론트엔드 배포 (Vercel)**
+   - **Project 생성**: Vercel 대시보드에서 `Import Project`를 선택하고 레포지토리를 연결합니다.
+   - **Root Directory**: `frontend`로 설정합니다.
+   - **Build Settings**: 정적 페이지이므로 Build Command는 비워두거나 기본값으로 둡니다.
+   - **확인**: 배포된 프론트엔드 URL(예: `https://xxx.vercel.app`)을 확인합니다.
+
+**4. 최종 연동 및 확인**
+   - **API URL 수정**: `frontend/js/app.js`의 `API_BASE` 상수를 로컬 주소에서 **실제 배포된 백엔드 URL**로 수정합니다.
+   - **CORS 업데이트**: `backend/main.py`의 `allow_origins`에 배포된 프론트엔드 URL을 추가합니다. (또는 테스트를 위해 `["*"]` 유지)
+   - **재배포**: 수정한 코드를 다시 GitHub에 `push`하면 플랫폼들이 자동으로 재배포를 수행합니다.
+   - **최종 테스트**: 배포된 프론트엔드 URL에 접속하여 실제 변환 기능이 작동하는지 최종 확인합니다.
 
 ---
 
-## 9. 바이브 코딩 프롬프트 예시
+## 10. 바이브 코딩 프롬프트 예시
 
 > Gemini CLI에서 바로 사용할 수 있는 프롬프트 예시입니다.
 > **원칙 1~4를 적용한 방식**으로 작성되어 있습니다.
@@ -521,7 +653,7 @@ CSS도 같이 수정해줘.
 
 ---
 
-## 10. 배포 가이드
+## 11. 배포 가이드
 
 ### `.gitignore` 필수 항목
 
