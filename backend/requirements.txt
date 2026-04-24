@@ -1,6 +1,6 @@
 fastapi
 uvicorn
 langchain
-langchain-upstage
+langchain-openai
 python-dotenv
 pydantic
