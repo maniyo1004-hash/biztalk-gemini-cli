@@ -678,13 +678,29 @@ python-dotenv
 pydantic
 ```
 
-### Vercel 배포 설정
+### Vercel 배포 설정 (`vercel.json`)
 
 ```json
-// vercel.json (frontend/ 루트에 위치)
 {
+  "builds": [
+    {
+      "src": "backend/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "backend/main.py"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "frontend/$1"
+    }
   ]
 }
 ```
